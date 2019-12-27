@@ -1,0 +1,85 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+service: uclwalks-backend
+provider:
+  name: aws
+  runtime: rust
+  memorySize: 128
+  # you can overwrite defaults here
+  stage: prod
+  region: eu-west-1
+
+  # you can add statements to the Lambda function's IAM Role here
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:eu-west-1:*:*"
+
+# you can define service wide environment variables here
+#  environment:
+#    variable1: value1
+
+package:
+  individually: true
+
+plugins:
+  - serverless-rust
+
+functions:
+  steps:
+    # handler value syntax is `{cargo-package-name}.{bin-name}`
+    # or `{cargo-package-name}` for short when you are building a
+    # default bin for a given package.
+    handler: steps
+    events:
+      - http:
+          path: steps
+          method: post
+          cors: true
+          authorizer: aws_iam
+  #      - cognitoUserPool:
+  #          pool: MyUserPool
+  #          trigger: PreSignUp
+
+  #    Define function environment variables here
+  #    environment:
+  #      variable2: value2
+
+  total:
+    handler: total
+    events:
+      - http:
+          path: steps
+          cors: true
+          method: get
+  # update_total:
+  #   handler: update_total
+  #   events:
+  #     - stream: arn:aws:dynamodb:eu-west-1:027133101987:table/uclsteps/stream/2019-12-26T16:26:55.824
+# you can add CloudFormation resource templates here
+#  Resources:
+#    NewResource:
+#      Type: AWS::S3::Bucket
+#      Properties:
+#        BucketName: my-new-bucket
+#  Outputs:
+#     NewOutput:
+#       Description: "Description for the output"
+#       Value: "Some output value"

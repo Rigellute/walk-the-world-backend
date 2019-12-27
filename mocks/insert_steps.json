@@ -1,0 +1,8 @@
+{
+  "body": "{\"steps\": 5678}",
+  "requestContext": {
+    "identity": {
+      "cognitoIdentityId": "USER-SUB-1234"
+    }
+  }
+}
