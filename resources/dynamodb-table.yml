@@ -1,0 +1,17 @@
+Resources:
+  UclStepsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ${self:custom.TABLE_NAME}
+      AttributeDefinitions:
+        - AttributeName: user_id
+          AttributeType: S
+        - AttributeName: step_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: user_id
+          KeyType: HASH
+        - AttributeName: step_id
+          KeyType: RANGE
+      # Set the capacity to auto-scale
+      BillingMode: PAY_PER_REQUEST

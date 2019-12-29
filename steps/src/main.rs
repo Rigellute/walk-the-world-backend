@@ -132,7 +132,7 @@ fn handler(event: CustomEvent, context: Context) -> Result<CustomOutput, Handler
         }),
         Err(e) => {
             println!(
-                "Something went wrong: id - {}, error - {}",
+                "Error saving steps: id - {}, error - {}",
                 context.aws_request_id, e
             );
             bail!("Error saving steps");

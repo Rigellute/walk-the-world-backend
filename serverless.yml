@@ -15,8 +15,7 @@ provider:
   name: aws
   runtime: rust
   memorySize: 128
-  # you can overwrite defaults here
-  stage: prod
+  stage: dev
   region: eu-west-1
 
   # you can add statements to the Lambda function's IAM Role here
@@ -30,11 +29,20 @@ provider:
         - dynamodb:PutItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
-      Resource: "arn:aws:dynamodb:eu-west-1:*:*"
+      # Restrict our IAM role permissions to
+      # the specific table for the stage
+      Resource:
+        - "Fn::GetAtt": [UclStepsTable, Arn]
 
   # you can define service wide environment variables here
   environment:
-    TABLE_NAME: uclsteps
+    TABLE_NAME: ${self:custom.TABLE_NAME}
+
+custom:
+  # Our stage is based on what is passed in when running serverless
+  # commands. Or fallsback to what we have set in the provider section.
+  STAGE: ${opt:stage, self:provider.stage}
+  TABLE_NAME: ${self:custom.STAGE}-uclsteps
 
 package:
   individually: true
@@ -57,11 +65,6 @@ functions:
           request:
             schema:
               application/json: ${file(validate_adding_steps.json)}
-
-  #    Define function environment variables here
-  #    environment:
-  #      variable2: value2
-
   total:
     handler: total
     events:
@@ -69,17 +72,13 @@ functions:
           path: steps
           cors: true
           method: get
-  # update_total:
-  #   handler: update_total
-  #   events:
-  #     - stream: arn:aws:dynamodb:eu-west-1:027133101987:table/uclsteps/stream/2019-12-26T16:26:55.824
-# you can add CloudFormation resource templates here
-#  Resources:
-#    NewResource:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: my-new-bucket
-#  Outputs:
-#     NewOutput:
-#       Description: "Description for the output"
-#       Value: "Some output value"
+
+# Create our resources with separate CloudFormation templates
+resources:
+  # API Gateway Errors
+  - ${file(resources/api-gateway-errors.yml)}
+  # DynamoDB
+  - ${file(resources/dynamodb-table.yml)}
+  # Cognito
+  - ${file(resources/cognito-user-pool.yml)}
+  - ${file(resources/cognito-identity-pool.yml)}
