@@ -1,2 +1,2 @@
 [workspace]
-members = ["core", "steps", "total", "update_total"]
+members = ["core", "steps", "total"]

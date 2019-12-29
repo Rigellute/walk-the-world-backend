@@ -32,9 +32,9 @@ provider:
         - dynamodb:DeleteItem
       Resource: "arn:aws:dynamodb:eu-west-1:*:*"
 
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
+  # you can define service wide environment variables here
+  environment:
+    TABLE_NAME: uclsteps
 
 package:
   individually: true
@@ -54,9 +54,9 @@ functions:
           method: post
           cors: true
           authorizer: aws_iam
-  #      - cognitoUserPool:
-  #          pool: MyUserPool
-  #          trigger: PreSignUp
+          request:
+            schema:
+              application/json: ${file(validate_adding_steps.json)}
 
   #    Define function environment variables here
   #    environment:

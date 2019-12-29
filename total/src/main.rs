@@ -1,38 +1,28 @@
-use dynomite::{FromAttributes, Item};
+use core::{CustomOutput, Steps};
+use dynomite::FromAttributes;
 use lambda_runtime::{error::HandlerError, lambda, Context};
 use rusoto_core::Region;
 use rusoto_dynamodb::{DynamoDb, DynamoDbClient, ScanInput};
 use serde::Serialize;
 use serde_json::Value;
 use simple_error::bail;
-use uuid::Uuid;
-
-#[derive(Item, Debug, Clone, Default, Serialize)]
-pub struct Steps {
-    #[dynomite(partition_key)]
-    user_id: String,
-    #[dynomite(sort_key)]
-    step_id: Uuid,
-    timestamp: u64,
-    steps: u32,
-}
-
-#[derive(Serialize)]
-struct CustomOutput {
-    #[serde(rename = "statusCode")]
-    status_code: u16,
-    body: u32,
-}
+use std::env;
 
 fn main() {
     lambda!(handler)
 }
 
+#[derive(Serialize)]
+struct BodyResponse {
+    steps: u64,
+}
+
 fn handler(_event: Value, context: Context) -> Result<CustomOutput, HandlerError> {
+    let table_name = env::var("TABLE_NAME")?;
     let client = DynamoDbClient::new(Region::EuWest1);
 
     let scan_items = ScanInput {
-        table_name: "uclsteps".to_string(),
+        table_name,
         ..ScanInput::default()
     };
 
@@ -43,9 +33,12 @@ fn handler(_event: Value, context: Context) -> Result<CustomOutput, HandlerError
                 agg + step_struct.steps
             });
 
+            let body = BodyResponse { steps };
+
             Ok(CustomOutput {
-                body: steps,
+                body: serde_json::to_string(&body)?,
                 status_code: 200,
+                ..CustomOutput::default()
             })
         }
         Err(e) => {
