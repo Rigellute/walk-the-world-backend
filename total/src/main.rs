@@ -1,3 +1,4 @@
+use chrono::prelude::*;
 use core::{CustomOutput, Steps};
 use dynomite::FromAttributes;
 use lambda_runtime::{error::HandlerError, lambda, Context};
@@ -15,6 +16,7 @@ fn main() {
 #[derive(Serialize)]
 struct BodyResponse {
     steps: u64,
+    calculated_at: i64,
 }
 
 fn handler(_event: Value, context: Context) -> Result<CustomOutput, HandlerError> {
@@ -33,7 +35,11 @@ fn handler(_event: Value, context: Context) -> Result<CustomOutput, HandlerError
                 agg + step_struct.steps
             });
 
-            let body = BodyResponse { steps };
+            let now: i64 = Utc::now().timestamp_millis();
+            let body = BodyResponse {
+                steps,
+                calculated_at: now,
+            };
 
             Ok(CustomOutput {
                 body: serde_json::to_string(&body)?,
