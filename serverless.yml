@@ -73,6 +73,14 @@ functions:
           cors: true
           method: get
 
+  preSignUpCheck:
+    handler: pre_sign_up_check
+    events:
+      - cognitoUserPool:
+          pool: ${self:custom.STAGE}-user-pool
+          trigger: PreSignUp
+          existing: true
+
 # Create our resources with separate CloudFormation templates
 resources:
   # API Gateway Errors

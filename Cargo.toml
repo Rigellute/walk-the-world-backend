@@ -1,2 +1,2 @@
 [workspace]
-members = ["core", "steps", "total"]
+members = ["core", "steps", "total", "pre_sign_up_check"]
