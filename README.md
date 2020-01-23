@@ -26,6 +26,35 @@ cycle.
 
 TODO using Github actions
 
+## Local deployment
+
+```bash
+serverless deploy -v
+```
+
+The `-v` is important as this will print out all the created resources from cloudformation. These resources are then environment variables for the frontend.
+
+### Creating a user
+
+Either use a real signup flow or create a user using the aws cli
+
+```bash
+aws cognito-idp sign-up \
+  --region YOUR_COGNITO_REGION \
+  --client-id YOUR_COGNITO_APP_CLIENT_ID \
+  --username admin@example.com \
+  --password Passw0rd!
+```
+
+And then verify the user
+
+```bash
+aws cognito-idp admin-confirm-sign-up \
+  --region YOUR_COGNITO_REGION \
+  --user-pool-id YOUR_COGNITO_USER_POOL_ID \
+  --username admin@example.com
+```
+
 ## 🔬 Logs
 
 With your function deployed you can now tail it's logs right from your project
