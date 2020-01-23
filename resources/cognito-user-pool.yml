@@ -21,7 +21,7 @@ Resources:
     Type: AWS::Cognito::UserPoolClient
     Properties:
       # Generate an app client name based on the stage
-      ClientName: ${self:custom.STAGE}-user-pool-client
+      ClientName: ${self:custom.STAGE}-walk-the-world-user-pool-client
       UserPoolId:
         Ref: CognitoUserPool
       ExplicitAuthFlows:

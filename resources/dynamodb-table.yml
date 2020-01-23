@@ -1,5 +1,5 @@
 Resources:
-  UclStepsTable:
+  WalkTheWorldTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: ${self:custom.TABLE_NAME}
