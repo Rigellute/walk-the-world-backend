@@ -1,3 +1,4 @@
+use aws_lambda_events::event::apigw::ApiGatewayProxyRequest;
 use chrono::prelude::*;
 use core::{CustomOutput, Steps};
 use lambda_runtime::{error::HandlerError, lambda, Context};
@@ -10,43 +11,30 @@ use std::env;
 use uuid::Uuid;
 
 #[derive(Deserialize)]
-struct Identity {
-    #[serde(rename = "cognitoIdentityId")]
-    cognito_identity_id: String,
-}
-
-#[derive(Deserialize)]
-struct RequestContext {
-    identity: Identity,
-}
-
-#[derive(Deserialize)]
 struct Body {
     steps: u64,
-}
-
-#[derive(Deserialize)]
-struct CustomEvent {
-    body: String,
-    #[serde(rename = "requestContext")]
-    request_context: RequestContext,
 }
 
 fn main() {
     lambda!(handler)
 }
 
-fn handler(event: CustomEvent, context: Context) -> Result<CustomOutput, HandlerError> {
+fn handler(event: ApiGatewayProxyRequest, context: Context) -> Result<CustomOutput, HandlerError> {
     let table_name = env::var("TABLE_NAME")?;
     let client = DynamoDbClient::new(Region::EuWest1);
 
     let utc: DateTime<Utc> = Utc::now();
     let now_as_millis = utc.timestamp_millis();
     let num_millis_from_midnight = utc.num_seconds_from_midnight() * 1000;
-    let user_id = event.request_context.identity.cognito_identity_id;
+    let user_id = event
+        .request_context
+        .identity
+        .cognito_identity_id
+        .expect("Not authorized: no user_id present.");
 
     /*
      * First, validate that the user has not added any steps within the last day (i.e. since midnight)
+     * Users should only be able to add their steps once a day.
      */
     // The property "timestamp" is a reserved word in DynamoDb, so we must rename it
     let mut expression_attribute_names = HashMap::new();
@@ -60,6 +48,7 @@ fn handler(event: CustomEvent, context: Context) -> Result<CustomOutput, Handler
             ..Default::default()
         },
     );
+
     expression_attribute_values.insert(
         ":midnight".to_string(),
         AttributeValue {
@@ -100,8 +89,12 @@ fn handler(event: CustomEvent, context: Context) -> Result<CustomOutput, Handler
         return Ok(not_allowed);
     }
 
-    let body = match serde_json::from_str::<Body>(&event.body) {
-        Ok(body) => body,
+    let body = event
+        .body
+        .expect("No `body` property present in the request");
+
+    let steps = match serde_json::from_str::<Body>(&body) {
+        Ok(body) => body.steps,
         Err(e) => {
             println!(
                 "Error parsing body: id - {}, error - {}",
@@ -114,7 +107,7 @@ fn handler(event: CustomEvent, context: Context) -> Result<CustomOutput, Handler
     let new_step_entry = Steps {
         user_id,
         step_id: Uuid::new_v4(),
-        steps: body.steps,
+        steps,
         timestamp: now_as_millis as u64,
     };
 

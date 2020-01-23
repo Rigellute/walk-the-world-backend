@@ -43,6 +43,7 @@ custom:
   # commands. Or fallsback to what we have set in the provider section.
   STAGE: ${opt:stage, self:provider.stage}
   TABLE_NAME: ${self:custom.STAGE}-uclsteps
+  USER_POOL_NAME: ${self:custom.STAGE}-user-pool
 
 package:
   individually: true
@@ -77,7 +78,7 @@ functions:
     handler: pre_sign_up_check
     events:
       - cognitoUserPool:
-          pool: ${self:custom.STAGE}-user-pool
+          pool: ${self:custom.USER_POOL_NAME}
           trigger: PreSignUp
           existing: true
 

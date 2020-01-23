@@ -1262,6 +1262,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "steps"
 version = "0.1.0"
 dependencies = [
+ "aws_lambda_events 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.4.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "core 0.1.0",
  "dynomite 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
